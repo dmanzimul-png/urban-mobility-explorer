@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+     <title>Urban Mobility Data Explorer</title>
+     <!-- Connect our CSS file -->
+      <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+
+    <!--Dashboard Header-->
+    <header>
+      <h1>Urban Mobility Data Explorer</h1>
+      <p>Explore New York City taxi trip patterns</p>
+    </header>
+
+    <!--Main dashboard content -->
+    <main>
+
+      <!--Statistics Summary-->
+      <section class="Statistics">
+        <div class="stat-card">
+             <h2>Total Trips</h2>
+             <p id="total-trips">0</p>
+        </div>
+
+        <div class="stat-card">
+             <h2>Average Fare</h2>
+             <p id="average-fare">$0.00</p>
+        </div>
+
+        <div class="stat-card">
+             <h2>Average Distance</h2>
+             <p id="average-distance">0 miles</p>
+
+        </div>
+      </section>
+
+      <!-- Filters-->
+       <section class="filters">
+          <h2>Explore Trips</h2>
+
+         
+          <label for="borough">Pickup Borough:</label>
+
+          <select id="borough">
+             <option value="all">All Boroughs</option>
+                <option value="Manhattan">Manhattan</option>
+                <option value="Brooklyn">Brooklyn</option>
+                <option value="Queens">Queens</option>
+                <option value="Bronx">Bronx</option>
+          </select>
+
+          <button id="reset-filters">Reset Filters</button>     
+          </section>
+
+        <!--Results of the trip-->
+        <section class="trip-results">
+              <h2>Trip Information</h2>
+
+              <p id="results-message">
+                Trip information will appear here.
+              </p>
+        </section>
+  </main>
+   <!-- Connect our JavaScript file -->
+    <script src="script.js"></script>
+  </body>
+</html>
