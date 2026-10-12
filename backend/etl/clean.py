@@ -20,8 +20,9 @@ PROC    = os.path.join(BASE, "data", "processed")
 LOGS    = os.path.join(BASE, "data", "logs")
 DB      = os.path.join(BASE, "database", "nyc_taxi.db")
 
-# Raw files are looked up in backend/data/raw/ first, then the repo root.
-RAW_DIRS = [RAW, ROOT]
+# Raw files are read from the repo root (yellow_tripdata_2019-01.csv and
+# taxi_zone_lookup.csv live there); backend/data/raw/ is a fallback.
+RAW_DIRS = [ROOT, RAW]
 
 AIRPORTS = {1, 132, 138}   # EWR, JFK, LaGuardia
 
@@ -66,12 +67,36 @@ def find_trip_data_file():
     return find_raw_file(["*tripdata*.csv", "*tripdata*.parquet"], "trip data")
 
 
+def clean_zones(zones):
+    """
+    Clean the zone lookup: trim text, drop rows without a valid LocationID,
+    keep one row per LocationID, and give the two placeholder rows readable
+    labels (TLC ships 264 as "Unknown"/"N/A" and 265 as borough "N/A").
+    """
+    zones = zones.copy()
+    for col in ["Borough", "Zone", "service_zone"]:
+        zones[col] = zones[col].astype(str).str.strip()
+    zones["LocationID"] = pd.to_numeric(zones["LocationID"], errors="coerce")
+    zones = zones.dropna(subset=["LocationID"])
+    zones["LocationID"] = zones["LocationID"].astype(int)
+    zones = zones.drop_duplicates(subset="LocationID", keep="first")
+
+    placeholder = {"", "N/A", "NA", "nan"}
+    zones.loc[zones["Borough"].isin(placeholder), "Borough"] = "Unknown"
+    zones.loc[zones["LocationID"] == 265, "Borough"] = "Outside NYC"
+    zones.loc[zones["Zone"].isin(placeholder), "Zone"] = "Unknown"
+    zones.loc[zones["service_zone"].isin(placeholder), "service_zone"] = "Unknown"
+    return zones.sort_values("LocationID").reset_index(drop=True)
+
+
 def load_zones():
     path = find_raw_file(["taxi_zone_lookup.csv"], "zone lookup")
-    # keep_default_na=False keeps the literal "N/A" / "Unknown" labels the TLC
-    # uses for LocationID 264/265 instead of turning them into NaN.
-    zones = pd.read_csv(path, keep_default_na=False)
-    zones["LocationID"] = zones["LocationID"].astype(int)
+    print(f"      Zones : {path}")
+    # keep_default_na=False keeps the literal "N/A" / "Unknown" labels so
+    # clean_zones() decides what they become, instead of pandas turning them into NaN.
+    zones = clean_zones(pd.read_csv(path, keep_default_na=False))
+    zones.to_csv(os.path.join(PROC, "taxi_zones_clean.csv"), index=False)
+    print(f"      Zones cleaned : {len(zones)} -> backend/data/processed/taxi_zones_clean.csv")
     return zones
 
 
@@ -116,7 +141,7 @@ def load_raw(nrows=None):
 
     trip_file = find_trip_data_file()
     is_csv    = trip_file.lower().endswith(".csv")
-    print(f"      Source: {trip_file} ({'CSV' if is_csv else 'Parquet'})")
+    print(f"      Trips : {trip_file} ({'CSV' if is_csv else 'Parquet'})")
 
     if is_csv:
         df = pd.read_csv(

@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "etl"))
 
-from clean import clean, engineer, identify_issues, fare_component_mismatch
+from clean import clean, clean_zones, engineer, identify_issues, fare_component_mismatch
 
 
 def make_sample_df():
@@ -273,6 +273,22 @@ def test_clean_rejects_multi_day_trips():
     print(" test_clean_rejects_multi_day_trips PASSED")
 
 
+def test_clean_zones_fixes_placeholders_and_duplicates():
+    raw = pd.DataFrame({
+        "LocationID":   [1, 1, 264, 265, "x"],
+        "Borough":      [" EWR ", "EWR", "Unknown", "N/A", "Queens"],
+        "Zone":         ["Newark Airport", "dup", "N/A", "Outside of NYC", "bad id"],
+        "service_zone": ["EWR", "EWR", "N/A", "N/A", "Boro Zone"],
+    })
+    z = clean_zones(raw)
+    assert list(z["LocationID"]) == [1, 264, 265]
+    assert z.loc[0, "Borough"] == "EWR"
+    assert z.loc[1, "Zone"] == "Unknown"
+    assert z.loc[2, "Borough"] == "Outside NYC"
+    assert (z["service_zone"] != "N/A").all()
+    print(" test_clean_zones_fixes_placeholders_and_duplicates PASSED")
+
+
 def run_all_tests():
     print("=" * 60)
     print("Running ETL Unit Tests")
@@ -290,6 +306,7 @@ def run_all_tests():
     test_engineer_adds_tip_percentage()
     test_fare_mismatch_counts_2019_surcharges()
     test_clean_rejects_multi_day_trips()
+    test_clean_zones_fixes_placeholders_and_duplicates()
     print("=" * 60)
     print("All tests completed.")
     print("=" * 60)

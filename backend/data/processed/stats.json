@@ -57,7 +57,7 @@
       "avg_distance": 2.22
     },
     {
-      "borough": "N/A",
+      "borough": "Outside NYC",
       "trips": 1805,
       "revenue": 68216.74,
       "avg_fare": 31.63,

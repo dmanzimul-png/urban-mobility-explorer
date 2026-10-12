@@ -77,6 +77,7 @@ urban-mobility-explorer/
 │   ├── data/
 │   │   ├── raw/                    – optional location for the raw files
 │   │   ├── processed/stats.json    – precomputed dashboard stats
+│   │   ├── processed/taxi_zones_clean.csv – cleaned zone lookup
 │   │   └── logs/                   – dead_letter.csv, rejection_summary.json
 │   └── database/nyc_taxi.db        – generated, not committed
 │
@@ -101,7 +102,7 @@ venv\Scripts\activate            # macOS/Linux: source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Download `yellow_tripdata_2019-01.csv` from the [NYC TLC trip record page](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) and put it in the repo root or in `backend/data/raw/`. The ETL looks in `backend/data/raw/` first, then the repo root. It accepts any `*tripdata*.csv` or `*tripdata*.parquet` file and detects the reporting month from the data.
+Download `yellow_tripdata_2019-01.csv` from the [NYC TLC trip record page](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) and put it in the repo root next to `taxi_zone_lookup.csv`. The ETL reads both files from the repo root (`backend/data/raw/` is only a fallback). It accepts any `*tripdata*.csv` or `*tripdata*.parquet` file and detects the reporting month from the data.
 
 ---
 
@@ -256,6 +257,8 @@ Each rejected row is labeled with the **first** rule it breaks and written to `b
 | Fare > $500 | 9 | Outlier |
 | Trip longer than 24 h | 5 | Stuck meter (e.g. one trip ran 1–31 Jan) |
 | **Total** | **197,928** | 2.6% of raw records |
+
+**Zone lookup** (`taxi_zone_lookup.csv`, 265 zones): text is trimmed, duplicate or non-numeric LocationIDs are dropped, and the TLC placeholder rows get readable labels — 264 becomes borough/zone `Unknown`, 265 becomes borough `Outside NYC`. The cleaned table is saved to `backend/data/processed/taxi_zones_clean.csv` and loaded into `taxi_zones`.
 
 Nulls are filled rather than dropped: `passenger_count` and `RatecodeID` default to the mode (1); `congestion_surcharge` (blank for all of Jan 2019) and `airport_fee` (not yet in 2019 files) default to 0.
 
