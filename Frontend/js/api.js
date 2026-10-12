@@ -1,69 +1,60 @@
 /**
- * Fetch helpers for all backend API endpoints.
+ * Fetch helpers for the backend API.
  */
 
-// Same origin when the dashboard is served by Flask (http://127.0.0.1:5000/),
-// otherwise (Live Server, python -m http.server) call the API on port 5000.
-const API =
-  window.location.port === "5000"
+// Same origin when the dashboard is served by Flask; otherwise (Live Server,
+// python -m http.server) call the API on its default port.
+const API_BASE =
+  window.location.port === "5000" || window.location.pathname.startsWith("/api")
     ? `${window.location.origin}/api`
     : "http://127.0.0.1:5000/api";
 
-async function apiFetch(endpoint) {
-  try {
-    const res = await fetch(`${API}${endpoint}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (e) {
-    console.error(`API error [${endpoint}]:`, e);
-    return null;
+export class ApiError extends Error {
+  constructor(message, status) {
+    super(message);
+    this.status = status;
   }
 }
 
-async function fetchSummary() {
-  return apiFetch("/summary");
-}
-async function fetchByHour() {
-  return apiFetch("/by-hour");
-}
-async function fetchByBorough() {
-  return apiFetch("/by-borough");
-}
-async function fetchByDay() {
-  return apiFetch("/by-day");
-}
-async function fetchByPayment() {
-  return apiFetch("/by-payment");
-}
-async function fetchTopZones() {
-  return apiFetch("/top-zones");
-}
-async function fetchDailyTrend() {
-  return apiFetch("/daily-trend");
-}
-async function fetchAirport() {
-  return apiFetch("/airport");
-}
-async function fetchSpeedDist() {
-  return apiFetch("/speed-distribution");
-}
-async function fetchDataQuality() {
-  return apiFetch("/data-quality");
-}
-async function fetchDSABenchmark() {
-  return apiFetch("/dsa-benchmark");
-}
-async function fetchRejectionReasons() {
-  return apiFetch("/rejection-reasons");
-}
-async function fetchBoroughs() {
-  return apiFetch("/boroughs");
-}
-
-async function fetchTrips(params = {}) {
+async function get(path, params) {
   const qs = new URLSearchParams();
-  Object.entries(params).forEach(([k, v]) => {
+  Object.entries(params ?? {}).forEach(([k, v]) => {
     if (v !== "" && v !== null && v !== undefined) qs.append(k, v);
   });
-  return apiFetch(`/trips?${qs.toString()}`);
+  const url = `${API_BASE}${path}${qs.size ? `?${qs}` : ""}`;
+
+  let res;
+  try {
+    res = await fetch(url);
+  } catch {
+    throw new ApiError("Can't reach the API", 0);
+  }
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new ApiError(body.error ?? `HTTP ${res.status}`, res.status);
+  return body;
 }
+
+// Stats endpoints are precomputed and never change while the page is open.
+const cache = new Map();
+const cached = (path) => () => {
+  if (!cache.has(path)) cache.set(path, get(path).catch((e) => { cache.delete(path); throw e; }));
+  return cache.get(path);
+};
+
+export const api = {
+  summary: cached("/summary"),
+  dailyTrend: cached("/daily-trend"),
+  byPayment: cached("/by-payment"),
+  airport: cached("/airport"),
+  byHour: cached("/by-hour"),
+  byDay: cached("/by-day"),
+  speed: cached("/speed-distribution"),
+  byBorough: cached("/by-borough"),
+  topZones: cached("/top-zones"),
+  boroughs: cached("/boroughs"),
+  dataQuality: cached("/data-quality"),
+  rejectionReasons: cached("/rejection-reasons"),
+  trips: (params) => get("/trips", params),
+  trip: (id) => get(`/trips/${encodeURIComponent(id)}`),
+  benchmark: () => get("/dsa-benchmark"),
+};
