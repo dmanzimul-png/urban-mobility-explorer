@@ -6,6 +6,7 @@ Then open http://127.0.0.1:5000/ for the dashboard.
 """
 
 import json
+import mimetypes
 import os
 import sqlite3
 import sys
@@ -22,6 +23,11 @@ import config
 DB         = config.DB
 STATS_JSON = config.STATS_JSON
 FRONTEND   = config.FRONTEND_DIR
+
+# Windows can map .js to text/plain in the registry, which stops the
+# dashboard's ES modules from loading. Pin the correct types.
+mimetypes.add_type("text/javascript", ".js")
+mimetypes.add_type("text/css", ".css")
 
 app = Flask(__name__, static_folder=None)
 CORS(app)   # allow the dashboard to call the API from Live Server / http.server
