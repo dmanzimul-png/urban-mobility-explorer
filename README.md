@@ -61,7 +61,7 @@ A full-stack data platform that cleans, analyzes and visualizes NYC Yellow Taxi 
 urban-mobility-explorer/
 ├── README.md
 ├── requirements.txt
-├── taxi_zone_lookup.csv            – TLC zone lookup (dimension table)
+├── taxi_zone_lookup.csv            – TLC zone lookup (not committed)
 ├── yellow_tripdata_2019-01.csv     – trip data (not committed, ~690 MB)
 │
 ├── backend/
@@ -77,7 +77,7 @@ urban-mobility-explorer/
 │   ├── data/
 │   │   ├── raw/                    – optional location for the raw files
 │   │   ├── processed/stats.json    – precomputed dashboard stats
-│   │   ├── processed/taxi_zones_clean.csv – cleaned zone lookup
+│   │   ├── processed/taxi_zones_clean.csv – cleaned zone lookup (generated)
 │   │   └── logs/                   – dead_letter.csv, rejection_summary.json
 │   └── database/nyc_taxi.db        – generated, not committed
 │
@@ -102,7 +102,7 @@ venv\Scripts\activate            # macOS/Linux: source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Download `yellow_tripdata_2019-01.csv` from the [NYC TLC trip record page](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) and put it in the repo root next to `taxi_zone_lookup.csv`. The ETL reads both files from the repo root (`backend/data/raw/` is only a fallback). It accepts any `*tripdata*.csv` or `*tripdata*.parquet` file and detects the reporting month from the data.
+Download `yellow_tripdata_2019-01.csv` and `taxi_zone_lookup.csv` from the [NYC TLC trip record page](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page) and put both in the repo root. Neither is committed. The ETL reads both files from the repo root (`backend/data/raw/` is only a fallback). It accepts any `*tripdata*.csv` or `*tripdata*.parquet` file and detects the reporting month from the data.
 
 ---
 
