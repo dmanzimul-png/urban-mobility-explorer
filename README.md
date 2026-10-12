@@ -10,7 +10,7 @@ A full-stack data platform that cleans, analyzes and visualizes NYC Yellow Taxi 
 | Feature engineering | Trip duration, average speed, fare per mile, tip percentage, hour/day, airport flag |
 | Database | SQLite, `trips` + `taxi_zones` tables, 7 indexes |
 | Backend | Flask REST API, 16 endpoints, also serves the dashboard |
-| Frontend | 6-tab dashboard (vanilla JS + Chart.js) |
+| Frontend | 6-tab dashboard (vanilla JS modules + Chart.js), light/dark themes, mobile layout, table view for every chart |
 | Custom algorithms | QuickSort, Min-Heap Top-K, HashMap — no built-in `sort`, `heapq` or `Counter` |
 
 ---
@@ -65,6 +65,7 @@ urban-mobility-explorer/
 ├── yellow_tripdata_2019-01.csv     – trip data (not committed, ~690 MB)
 │
 ├── backend/
+│   ├── config.py                   – shared paths and settings (overridable by env vars)
 │   ├── etl/
 │   │   ├── clean.py                – cleaning, feature engineering, DB load
 │   │   └── algorithms.py           – QuickSort, MinHeap, HashMap + benchmark
@@ -83,11 +84,14 @@ urban-mobility-explorer/
 │
 └── Frontend/
     ├── index.html
-    ├── style.css
-    └── js/
-        ├── api.js                  – fetch wrappers
-        ├── charts.js               – Chart.js render functions
-        └── dashboard.js            – main controller
+    ├── style.css                   – design tokens, light/dark themes, responsive layout
+    └── js/                         – ES modules
+        ├── main.js                 – entry point: tabs, theme, API status
+        ├── api.js                  – fetch client with error handling and caching
+        ├── charts.js               – Chart.js helpers + table view for every chart
+        ├── format.js               – number/date formatting
+        ├── theme.js                – light/dark toggle
+        └── tabs/                   – one module per dashboard tab
 ```
 
 ---
@@ -136,6 +140,8 @@ python backend/api/app.py
 ```
 Open **http://127.0.0.1:5000/** for the dashboard; the API index is at `/api`.
 (Live Server or `python -m http.server` in `Frontend/` also works — the dashboard then calls the API on port 5000.)
+
+Settings can be changed with environment variables: `UME_DB` (database path), `UME_PORT` (default 5000), `UME_HOST`, `UME_DEBUG` (`0` to turn off Flask debug mode).
 
 ### 3. Run the tests
 ```bash
