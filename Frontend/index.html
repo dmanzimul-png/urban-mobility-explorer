@@ -1,71 +1,314 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Urban Mobility Data Explorer</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
 
-     <title>Urban Mobility Data Explorer</title>
-     <!-- Connect our CSS file -->
-      <link rel="stylesheet" href="style.css">
-  </head>
-  <body>
+<!-- ── HEADER ─────────────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <span class="taxi-icon">🚕</span>
+      <div>
+        <h1>Urban Mobility Data Explorer</h1>
+        <p id="header-subtitle">Explore New York City taxi trip patterns · Loading data period…</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="badge" id="status-badge">● Loading…</span>
+    </div>
+  </div>
+</header>
 
-    <!--Dashboard Header-->
-    <header>
-      <h1>Urban Mobility Data Explorer</h1>
-      <p>Explore New York City taxi trip patterns</p>
-    </header>
+<!-- ── NAVIGATION TABS ────────────────────────────────────────────────────── -->
+<nav class="tabs">
+  <button class="tab active" data-tab="overview">Overview</button>
+  <button class="tab" data-tab="patterns">Time Patterns</button>
+  <button class="tab" data-tab="geography">Geography</button>
+  <button class="tab" data-tab="trips">Trip Explorer</button>
+  <button class="tab" data-tab="dsa">DSA Benchmark</button>
+  <button class="tab" data-tab="quality">Data Quality</button>
+</nav>
 
-    <!--Main dashboard content -->
-    <main>
+<!-- ══════════════════════════════════════════════════════════════════════════
+     TAB 1 — OVERVIEW
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-overview">
 
-      <!--Statistics Summary-->
-      <section class="Statistics">
-        <div class="stat-card">
-             <h2>Total Trips</h2>
-             <p id="total-trips">0</p>
-        </div>
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon">🚖</div>
+      <div class="kpi-value" id="kpi-trips">—</div>
+      <div class="kpi-label">Total Trips</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">💵</div>
+      <div class="kpi-value" id="kpi-revenue">—</div>
+      <div class="kpi-label">Total Revenue</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📍</div>
+      <div class="kpi-value" id="kpi-avg-fare">—</div>
+      <div class="kpi-label">Avg Fare</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📏</div>
+      <div class="kpi-value" id="kpi-avg-dist">—</div>
+      <div class="kpi-label">Avg Distance</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">⏱️</div>
+      <div class="kpi-value" id="kpi-avg-dur">—</div>
+      <div class="kpi-label">Avg Duration</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">✈️</div>
+      <div class="kpi-value" id="kpi-airport">—</div>
+      <div class="kpi-label">Airport Trips</div>
+    </div>
+  </div>
 
-        <div class="stat-card">
-             <h2>Average Fare</h2>
-             <p id="average-fare">$0.00</p>
-        </div>
+  <!-- Charts row -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <h3 id="daily-trend-title">Daily Trip Trend</h3>
+      <canvas id="chart-daily"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Trips by Payment Method</h3>
+      <canvas id="chart-payment"></canvas>
+    </div>
+  </div>
 
-        <div class="stat-card">
-             <h2>Average Distance</h2>
-             <p id="average-distance">0 miles</p>
+  <!-- Insight box -->
+  <div class="insight-box">
+    <h3>💡 Key Insight — Airport vs Non-Airport Fares</h3>
+    <div class="insight-content" id="insight-airport">Loading…</div>
+  </div>
 
-        </div>
-      </section>
+</div>
 
-      <!-- Filters-->
-       <section class="filters">
-          <h2>Explore Trips</h2>
+<!-- ══════════════════════════════════════════════════════════════════════════
+     TAB 2 — TIME PATTERNS
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-patterns">
+  <div class="charts-row">
+    <div class="chart-card wide">
+      <h3>Trips by Hour of Day</h3>
+      <p class="chart-sub">When does NYC taxi demand peak?</p>
+      <canvas id="chart-hour"></canvas>
+    </div>
+  </div>
+  <div class="charts-row">
+    <div class="chart-card">
+      <h3>Trips by Day of Week</h3>
+      <canvas id="chart-day"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Average Speed Distribution</h3>
+      <canvas id="chart-speed"></canvas>
+    </div>
+  </div>
+  <div class="insight-box">
+    <h3>💡 Insight — Peak Hour Analysis</h3>
+    <p id="insight-hour">Loading…</p>
+  </div>
+</div>
 
-         
-          <label for="borough">Pickup Borough:</label>
+<!-- ══════════════════════════════════════════════════════════════════════════
+     TAB 3 — GEOGRAPHY
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-geography">
+  <div class="charts-row">
+    <div class="chart-card">
+      <h3>Trips by Borough</h3>
+      <canvas id="chart-borough"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Revenue by Borough</h3>
+      <canvas id="chart-borough-rev"></canvas>
+    </div>
+  </div>
+  <div class="chart-card wide">
+    <h3>Top 10 Busiest Pickup Zones</h3>
+    <p class="chart-sub">Identified using custom Min-Heap algorithm (O(n log k))</p>
+    <canvas id="chart-zones"></canvas>
+  </div>
+  <div class="insight-box">
+    <h3>💡 Insight — Geographic Concentration</h3>
+    <p id="insight-geo">Loading…</p>
+  </div>
+</div>
 
-          <select id="borough">
-             <option value="all">All Boroughs</option>
-                <option value="Manhattan">Manhattan</option>
-                <option value="Brooklyn">Brooklyn</option>
-                <option value="Queens">Queens</option>
-                <option value="Bronx">Bronx</option>
-          </select>
+<!-- ══════════════════════════════════════════════════════════════════════════
+     TAB 4 — TRIP EXPLORER
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-trips">
 
-          <button id="reset-filters">Reset Filters</button>     
-          </section>
+  <!-- Filters -->
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Borough</label>
+      <select id="filter-borough">
+        <option value="">All Boroughs</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Payment</label>
+      <select id="filter-payment">
+        <option value="">All</option>
+        <option value="1">Credit Card</option>
+        <option value="2">Cash</option>
+        <option value="3">No Charge</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Min Fare ($)</label>
+      <input type="number" id="filter-min-fare" placeholder="0" min="0"/>
+    </div>
+    <div class="filter-group">
+      <label>Max Fare ($)</label>
+      <input type="number" id="filter-max-fare" placeholder="200" min="0"/>
+    </div>
+    <div class="filter-group">
+      <label>Hour (0-23)</label>
+      <input type="number" id="filter-hour" placeholder="Any" min="0" max="23"/>
+    </div>
+    <button class="btn-primary" id="btn-search">Search</button>
+    <button class="btn-secondary" id="btn-reset">Reset</button>
+  </div>
 
-        <!--Results of the trip-->
-        <section class="trip-results">
-              <h2>Trip Information</h2>
+  <!-- Results info -->
+  <div class="results-info" id="results-info">Enter filters and click Search</div>
 
-              <p id="results-message">
-                Trip information will appear here.
-              </p>
-        </section>
-  </main>
-   <!-- Connect our JavaScript file -->
-    <script src="script.js"></script>
-  </body>
+  <!-- Table -->
+  <div class="table-wrap">
+    <table class="data-table" id="trips-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Pickup</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Distance</th>
+          <th>Duration</th>
+          <th>Speed</th>
+          <th>Fare</th>
+          <th>Tip</th>
+          <th>Total</th>
+          <th>Payment</th>
+          <th>Airport</th>
+        </tr>
+      </thead>
+      <tbody id="trips-tbody">
+        <tr><td colspan="12" class="empty">Click Search to load trips</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     TAB 5 — DSA BENCHMARK
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-dsa">
+  <div class="dsa-header">
+    <h2>Custom Algorithm Benchmarks</h2>
+    <p>Three data structures implemented manually — no built-in sort, heapq, or Counter used.</p>
+    <button class="btn-primary" id="btn-run-dsa">▶ Run Benchmark</button>
+  </div>
+
+  <div class="dsa-grid">
+    <div class="dsa-card">
+      <h3>⚡ QuickSort</h3>
+      <div class="complexity-badge">O(n log n) avg</div>
+      <p>Sorts trip records by fare amount using manual partition-based quicksort. No Python sort() used.</p>
+      <div class="bench-result" id="bench-quicksort">Click Run Benchmark</div>
+    </div>
+    <div class="dsa-card">
+      <h3>🏔️ Min-Heap Top-K</h3>
+      <div class="complexity-badge">O(n log k)</div>
+      <p>Finds top-K busiest pickup zones using a manually implemented min-heap. Faster than sorting all zones when K is small.</p>
+      <div class="bench-result" id="bench-heap">Click Run Benchmark</div>
+    </div>
+    <div class="dsa-card">
+      <h3>🗂️ Manual HashMap</h3>
+      <div class="complexity-badge">O(n) avg</div>
+      <p>Counts trips per borough using a custom hash map with separate chaining. No Counter or dict.get used.</p>
+      <div class="bench-result" id="bench-hashmap">Click Run Benchmark</div>
+    </div>
+  </div>
+
+  <div class="chart-card wide" style="margin-top:24px">
+    <h3>Top 10 Pickup Zones — Found by Min-Heap</h3>
+    <canvas id="chart-dsa-zones"></canvas>
+  </div>
+
+  <div class="code-box">
+    <h3>Pseudo-code — QuickSort</h3>
+    <pre>quicksort(arr, key, lo, hi):
+  if lo &lt; hi:
+    pivot_index = partition(arr, key, lo, hi)
+    quicksort(arr, key, lo, pivot_index - 1)
+    quicksort(arr, key, pivot_index + 1, hi)
+
+partition(arr, key, lo, hi):
+  pivot = arr[hi][key]
+  i = lo - 1
+  for j in range(lo, hi):
+    if arr[j][key] >= pivot:   ← descending order
+      i++
+      swap(arr[i], arr[j])
+  swap(arr[i+1], arr[hi])
+  return i + 1</pre>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     TAB 6 — DATA QUALITY
+════════════════════════════════════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-quality">
+  <h2>Data Cleaning Report</h2>
+  <p>Records excluded from analysis and reasons for exclusion.</p>
+
+  <div class="quality-grid" id="quality-grid">Loading…</div>
+
+  <div class="chart-card" style="max-width:720px;margin:24px auto">
+    <h3>Rejection Reasons</h3>
+    <canvas id="chart-rejection"></canvas>
+  </div>
+
+  <div class="insight-box">
+    <h3>Data Cleaning Decisions</h3>
+    <ul>
+      <li><strong>Negative fares</strong> — Meter errors or refund records. Excluded from analysis.</li>
+      <li><strong>Zero passengers</strong> — Data entry errors. Standard is minimum 1 passenger.</li>
+      <li><strong>Zero distance</strong> — Cancelled trips or GPS failures. No meaningful analysis possible.</li>
+      <li><strong>Future / past dates</strong> — Timestamps falling outside the file's reporting month are temporal anomalies.</li>
+      <li><strong>Dropoff before pickup / trips over 24 h</strong> — Impossible or stuck-meter durations.</li>
+      <li><strong>Fare mismatch</strong> — <code>total_amount</code> differs from the sum of its itemized charges by more than $1.</li>
+      <li><strong>Speed &gt; 100 mph</strong> — Physically impossible for NYC taxi. GPS errors.</li>
+      <li><strong>Null passengers/ratecode</strong> — Filled with mode (1) rather than excluded.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── FOOTER ──────────────────────────────────────────────────────────────── -->
+<footer class="footer">
+  <p>Urban Mobility Data Explorer · NYC Taxi Analytics</p>
+  <p id="footer-period">Loading data period…</p>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
 </html>
