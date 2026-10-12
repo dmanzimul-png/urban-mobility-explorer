@@ -1,0 +1,13 @@
+{
+  "zero_passengers": 115608,
+  "zero_distance": 47350,
+  "fare_mismatch": 15766,
+  "negative_fare": 7122,
+  "bad_duration": 6291,
+  "impossible_speed": 5211,
+  "past_date": 441,
+  "future_date": 96,
+  "extreme_distance": 29,
+  "extreme_fare": 9,
+  "extreme_duration": 5
+}
