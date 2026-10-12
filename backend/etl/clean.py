@@ -8,21 +8,19 @@ import glob
 import json
 import os
 import sqlite3
+import sys
 import time
 
 import numpy as np
 import pandas as pd
 
-BASE    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # backend/
-ROOT    = os.path.dirname(BASE)                                         # repo root
-RAW     = os.path.join(BASE, "data", "raw")
-PROC    = os.path.join(BASE, "data", "processed")
-LOGS    = os.path.join(BASE, "data", "logs")
-DB      = os.path.join(BASE, "database", "nyc_taxi.db")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import config
 
-# Raw files are read from the repo root (yellow_tripdata_2019-01.csv and
-# taxi_zone_lookup.csv live there); backend/data/raw/ is a fallback.
-RAW_DIRS = [ROOT, RAW]
+RAW_DIRS = config.RAW_DIRS
+PROC     = config.PROC_DIR
+LOGS     = config.LOGS_DIR
+DB       = config.DB
 
 AIRPORTS = {1, 132, 138}   # EWR, JFK, LaGuardia
 

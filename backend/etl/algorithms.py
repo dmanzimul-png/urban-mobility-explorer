@@ -5,10 +5,13 @@ Custom algorithm and data structure implementations.
 import time
 import sqlite3
 import os
+import sys
 import copy
 
-DB = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                  "database", "nyc_taxi.db")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import config
+
+DB = config.DB
 
 
 # ══════════════════════════════════════════════════════════════════════════════

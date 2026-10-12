@@ -13,14 +13,15 @@ import sys
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
-# Path setup
-BASE     = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # backend/
-ROOT     = os.path.dirname(BASE)
-FRONTEND = os.path.join(ROOT, "Frontend")
+# Path setup: backend/ for config, backend/etl/ for the algorithms module
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE)
 sys.path.insert(0, os.path.join(BASE, "etl"))
+import config
 
-DB         = os.path.join(BASE, "database", "nyc_taxi.db")
-STATS_JSON = os.path.join(BASE, "data", "processed", "stats.json")
+DB         = config.DB
+STATS_JSON = config.STATS_JSON
+FRONTEND   = config.FRONTEND_DIR
 
 app = Flask(__name__, static_folder=None)
 CORS(app)   # allow the dashboard to call the API from Live Server / http.server
@@ -277,5 +278,5 @@ def frontend_files(filename):
 
 
 if __name__ == "__main__":
-    print("NYC Taxi API  -  http://127.0.0.1:5000  (dashboard at /, API at /api)")
-    app.run(debug=True, port=5000)
+    print(f"NYC Taxi API  -  http://{config.API_HOST}:{config.API_PORT}  (dashboard at /, API at /api)")
+    app.run(host=config.API_HOST, port=config.API_PORT, debug=config.API_DEBUG)
