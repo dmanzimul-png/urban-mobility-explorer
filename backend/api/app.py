@@ -11,7 +11,7 @@ import os
 import sqlite3
 import sys
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_file, send_from_directory
 from flask_cors import CORS
 
 # Path setup: backend/ for config, backend/etl/ for the algorithms module
@@ -23,6 +23,9 @@ import config
 DB         = config.DB
 STATS_JSON = config.STATS_JSON
 FRONTEND   = config.FRONTEND_DIR
+
+ZONE_GEOJSON = os.path.join(BASE, "data", "processed", "taxi_zones.geojson")
+_zone_cache = {"mtime": None, "data": None}
 
 # Windows can map .js to text/plain in the registry, which stops the
 # dashboard's ES modules from loading. Pin the correct types.
@@ -229,7 +232,7 @@ def dsa_benchmark():
     except FileNotFoundError as e:
         raise ApiError(str(e), 503)
 
-
+    
 @app.route("/api/boroughs")
 def boroughs():
     rows = query("SELECT DISTINCT borough FROM taxi_zones ORDER BY borough")
@@ -271,6 +274,8 @@ def api_index():
         ],
     })
 
+from zones_api import bp as zones_bp
+app.register_blueprint(zones_bp)
 
 # ── Dashboard (served from the same origin, so no Live Server is needed) ───────
 @app.route("/")

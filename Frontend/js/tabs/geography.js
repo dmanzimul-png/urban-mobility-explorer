@@ -3,6 +3,7 @@ import { axes, barStyle, renderChart } from "../charts.js";
 import { esc, fmt } from "../format.js";
 import { token } from "../theme.js";
 import { insight } from "./shared.js";
+import { renderMap, showMapError } from "./zonemap.js";
 
 export async function loadGeography() {
   const [boroughs, zones] = await Promise.all([api.byBorough(), api.topZones()]);
@@ -14,6 +15,7 @@ export async function loadGeography() {
   renderBoroughTrips(byTrips, total);
   renderBoroughFare(byTrips);
   renderZones(zones, total);
+  renderMap().catch((err) => showMapError(err));
 }
 
 function renderInsights(byTrips, total, zones) {
