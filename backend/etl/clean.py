@@ -335,8 +335,8 @@ CREATE TABLE trips (
     trip_distance         REAL    NOT NULL,
     pu_location_id        INTEGER REFERENCES taxi_zones(location_id),
     do_location_id        INTEGER REFERENCES taxi_zones(location_id),
-    rate_code_id          INTEGER,
-    payment_type          INTEGER,
+    rate_code_id          INTEGER REFERENCES rate_codes(rate_code_id),
+    payment_type          INTEGER REFERENCES payment_types(payment_type_id),
     fare_amount           REAL    NOT NULL,
     extra                 REAL    DEFAULT 0,
     mta_tax               REAL    DEFAULT 0,
@@ -371,7 +371,45 @@ CREATE INDEX idx_hour    ON trips(hour);
 CREATE INDEX idx_payment ON trips(payment_type);
 CREATE INDEX idx_airport ON trips(is_airport);
 CREATE INDEX idx_fare    ON trips(fare_amount);
+CREATE INDEX idx_rate    ON trips(rate_code_id);
 """
+
+PAYMENT_TYPES = {0: "Flexfare", 1: "Credit Card", 2: "Cash", 3: "No Charge",
+              4:"Dispute", 5: "Unknown", 6: "Voided"}
+RATE_CODES = {1: "Standard rate", 2: "JFK", 3: "Newark", 4: "Nassau or Westchester",
+              5: "Negotiated fare", 6: "Group ride", 99: "Unknown"}
+
+DIMENSION_SCHEMA = """
+DROP TABLE IF EXISTS payment_types;
+DROP TABLE IF EXISTS rate_codes;
+CREATE TABLE payment_types (payment_type_id INTEGER PRIMARY KEY, description TEXT NOT NULL);
+CREATE TABLE rate_codes (rate_code_id INTEGER PRIMARY KEY, description TEXT NOT NULL);
+"""
+
+def create_dimension_tables(cur):
+    cur.executescript(DIMENSION_SCHEMA)
+    cur.executemany("INSERT INTO payment_types VALUES(?, ?)", PAYMENT_TYPES.items())
+    cur.executemany("INSERT INTO rate_codes VALUES(?, ?)", RATE_CODES.items())
+
+def check_integrity(cur):
+    """SQLite doesn't enforce foreign keys during the fast bulk load, so verify afterwards:
+    count trips whose payment type, rate code or zones are missing from the lookup table."""
+    checks = {
+        "payment_type": "SELECT COUNT(*) FROM trips t LEFT JOIN payment_types d "
+                        "ON d.payment_type_id = t.payment_type WHERE d.payment_type_id IS NULL",
+        "rate_code_id": "SELECT COUNT(*) FROM trips t LEFT JOIN rate_codes d "
+                        "ON d.rate_code_id = t.rate_code_id WHERE d.rate_code_id IS NULL",
+        "pu_location_id": "SELECT COUNT(*) FROM trips t LEFT JOIN taxi_zones z "
+                          "ON z.location_id = t.pu_location_id WHERE z.location_id IS NULL",
+        "do_location_id": "SELECT COUNT(*) FROM trips t LEFT JOIN taxi_zones z "
+                          "ON z.location_id = t.do_location_id WHERE z.location_id IS NULL ",
+    }
+    print("  Integrity check (trips with no matching lookup row):")
+    for column, sql in checks.items():
+        print(f"    {column:15s}: {cur.execute(sql).fetchone()[0]:,}")
+
+
+
 
 TRIP_COLUMNS = {
     "VendorID":              "vendor_id",
@@ -416,6 +454,7 @@ def save_db(df, zones, chunk_size=250_000):
     cur.execute("PRAGMA journal_mode = OFF")
     cur.execute("PRAGMA synchronous = OFF")
     cur.executescript(SCHEMA)
+    create_dimension_tables(cur)
 
     zones_clean = zones.rename(columns={
         "LocationID": "location_id", "Borough": "borough",
@@ -446,7 +485,9 @@ def save_db(df, zones, chunk_size=250_000):
 
     n = cur.execute("SELECT COUNT(*) FROM trips").fetchone()[0]
     print(f"      Inserted {n:,} trips")
+    check_integrity(cur)
     conn.close()
+
 
 
 # ── 6. SAVE STATS ─────────────────────────────────────────────────────────────
