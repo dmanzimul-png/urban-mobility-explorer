@@ -15,6 +15,12 @@ A full-stack data platform that cleans, analyzes and visualizes NYC Yellow Taxi 
 | Custom algorithms   | QuickSort, Min-Heap Top-K, HashMap — no built-in `sort`, `heapq` or `Counter`                                 |
 
 ---
+## Documentation
+PDF file is under the Docs/
+
+Tasksheet:https://docs.google.com/spreadsheets/d/1vQPJupOUcNVi64zhhHPUVa7VBwm0-ax0dAxWF--dZ6M/edit?usp=sharing
+
+Video link:https://youtu.be/BExMOav1JEk
 
 ## Team
 
