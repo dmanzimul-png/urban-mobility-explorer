@@ -4,25 +4,25 @@ Urban Mobility Data Explorer — NYC Taxi Analytics
 
 A full-stack data platform that cleans, analyzes and visualizes NYC Yellow Taxi trip data: a Python ETL pipeline, a SQLite database, a Flask REST API, three hand-written algorithms, and an interactive Chart.js dashboard.
 
-| **Capability** | **Detail** |
-|---|---|
-| Data source | `yellow_tripdata_2019-01.csv` (fact table) + `taxi_zone_lookup.csv` (dimension table) |
-| Records processed | 7,667,792 raw → 7,469,864 clean trips (97.4% kept) |
-| Feature engineering | Trip duration, average speed, fare per mile, tip percentage, hour/day, airport flag |
-| Database | SQLite, `trips` + `taxi_zones` tables, 7 indexes |
-| Backend | Flask REST API, 16 endpoints, also serves the dashboard |
-| Frontend | 6-tab dashboard (vanilla JS modules + Chart.js), light/dark themes, mobile layout, table view for every chart |
-| Custom algorithms | QuickSort, Min-Heap Top-K, HashMap — no built-in `sort`, `heapq` or `Counter` |
+| **Capability**      | **Detail**                                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Data source         | `yellow_tripdata_2019-01.csv` (fact table) + `taxi_zone_lookup.csv` (dimension table)                         |
+| Records processed   | 7,667,792 raw → 7,469,864 clean trips (97.4% kept)                                                            |
+| Feature engineering | Trip duration, average speed, fare per mile, tip percentage, hour/day, airport flag                           |
+| Database            | SQLite, `trips` + `taxi_zones` tables, 7 indexes                                                              |
+| Backend             | Flask REST API, 16 endpoints, also serves the dashboard                                                       |
+| Frontend            | 6-tab dashboard (vanilla JS modules + Chart.js), light/dark themes, mobile layout, table view for every chart |
+| Custom algorithms   | QuickSort, Min-Heap Top-K, HashMap — no built-in `sort`, `heapq` or `Counter`                                 |
 
 ---
 
 ## Team
 
-| **Name** | **Role** |
-|---|---|
-| MANZI ELVIS | Frontend Engineer |
-| DANIEL KENNY KAMANZI | Database |
-| OLIVIER DUSABAMAHORO | Backend Engineer |
+| **Name**             | **Role**          |
+| -------------------- | ----------------- |
+| MANZI ELVIS          | Frontend Engineer |
+| DANIEL KENNY KAMANZI | Backend API       |
+| OLIVIER DUSABAMAHORO | Database          |
 
 ---
 
@@ -224,11 +224,11 @@ Borough and zone names are stored on each trip (denormalized) so the dashboard's
 
 ## Custom Algorithms (`backend/etl/algorithms.py`)
 
-| **Algorithm** | **Used for** | **Complexity** |
-|---|---|---|
-| QuickSort (Lomuto partition, descending) | Sorting trips by fare | O(n log n) avg, O(n²) worst; O(log n) stack, because it only recurses into the smaller partition |
-| Min-Heap Top-K | Top 10 busiest pickup zones | O(n log k) time, O(k) space |
-| HashMap (separate chaining, polynomial rolling hash) | Trips per borough | O(n) average, O(k) space |
+| **Algorithm**                                        | **Used for**                | **Complexity**                                                                                   |
+| ---------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------ |
+| QuickSort (Lomuto partition, descending)             | Sorting trips by fare       | O(n log n) avg, O(n²) worst; O(log n) stack, because it only recurses into the smaller partition |
+| Min-Heap Top-K                                       | Top 10 busiest pickup zones | O(n log k) time, O(k) space                                                                      |
+| HashMap (separate chaining, polynomial rolling hash) | Trips per borough           | O(n) average, O(k) space                                                                         |
 
 `GET /api/dsa-benchmark` runs all three live against the database, times them against the Python built-ins, and checks the results match.
 
@@ -236,24 +236,24 @@ Borough and zone names are stored on each trip (denormalized) so the dashboard's
 
 ## API Reference
 
-| **Method** | **Endpoint** | **Description** |
-|---|---|---|
-| GET | `/api/summary` | KPI summary |
-| GET | `/api/trips` | Paginated trips. Filters: `borough`, `payment_type`, `min_fare`, `max_fare`, `hour`; paging: `page`, `limit` (max 100). Invalid values return 400 |
-| GET | `/api/trips/<id>` | Single trip (404 if missing) |
-| GET | `/api/by-hour` | Trips by hour of day |
-| GET | `/api/by-day` | Trips by day of week |
-| GET | `/api/by-borough` | Trips and revenue by pickup borough |
-| GET | `/api/by-payment` | Trips by payment type |
-| GET | `/api/top-zones` | Top 10 pickup zones |
-| GET | `/api/daily-trend` | Daily trip counts and revenue |
-| GET | `/api/airport` | Airport vs non-airport average fare |
-| GET | `/api/speed-distribution` | Speed buckets |
-| GET | `/api/dsa-benchmark` | Live algorithm benchmark |
-| GET | `/api/boroughs` | Borough list |
-| GET | `/api/zones?borough=` | Zone list, optionally by borough |
-| GET | `/api/data-quality` | Issue counts in the raw data |
-| GET | `/api/rejection-reasons` | Why each rejected record was dropped |
+| **Method** | **Endpoint**              | **Description**                                                                                                                                   |
+| ---------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET        | `/api/summary`            | KPI summary                                                                                                                                       |
+| GET        | `/api/trips`              | Paginated trips. Filters: `borough`, `payment_type`, `min_fare`, `max_fare`, `hour`; paging: `page`, `limit` (max 100). Invalid values return 400 |
+| GET        | `/api/trips/<id>`         | Single trip (404 if missing)                                                                                                                      |
+| GET        | `/api/by-hour`            | Trips by hour of day                                                                                                                              |
+| GET        | `/api/by-day`             | Trips by day of week                                                                                                                              |
+| GET        | `/api/by-borough`         | Trips and revenue by pickup borough                                                                                                               |
+| GET        | `/api/by-payment`         | Trips by payment type                                                                                                                             |
+| GET        | `/api/top-zones`          | Top 10 pickup zones                                                                                                                               |
+| GET        | `/api/daily-trend`        | Daily trip counts and revenue                                                                                                                     |
+| GET        | `/api/airport`            | Airport vs non-airport average fare                                                                                                               |
+| GET        | `/api/speed-distribution` | Speed buckets                                                                                                                                     |
+| GET        | `/api/dsa-benchmark`      | Live algorithm benchmark                                                                                                                          |
+| GET        | `/api/boroughs`           | Borough list                                                                                                                                      |
+| GET        | `/api/zones?borough=`     | Zone list, optionally by borough                                                                                                                  |
+| GET        | `/api/data-quality`       | Issue counts in the raw data                                                                                                                      |
+| GET        | `/api/rejection-reasons`  | Why each rejected record was dropped                                                                                                              |
 
 ---
 
@@ -261,26 +261,26 @@ Borough and zone names are stored on each trip (denormalized) so the dashboard's
 
 Each rejected row is labeled with the **first** rule it breaks and written to `backend/data/logs/dead_letter.csv`. Counts for January 2019:
 
-| **Rule** | **Rejected** | **Reasoning** |
-|---|---:|---|
-| Zero passengers | 115,608 | Data entry error |
-| Zero / negative distance | 47,350 | Cancelled trip or GPS failure |
-| Fare total mismatch (> $1) | 15,766 | `total_amount` ≠ sum of fare, extra, MTA tax, tip, tolls, improvement + congestion surcharge |
-| Negative fare | 7,122 | Refunds / meter errors |
-| Dropoff at or before pickup | 6,291 | Impossible duration |
-| Speed > 100 mph | 5,211 | GPS error (checked after feature engineering) |
-| Pickup before the reporting month | 441 | Temporal anomaly |
-| Pickup after the reporting month | 96 | Temporal anomaly |
-| Distance > 100 mi | 29 | Outlier |
-| Fare > $500 | 9 | Outlier |
-| Trip longer than 24 h | 5 | Stuck meter (e.g. one trip ran 1–31 Jan) |
-| **Total** | **197,928** | 2.6% of raw records |
+| **Rule**                          | **Rejected** | **Reasoning**                                                                                |
+| --------------------------------- | -----------: | -------------------------------------------------------------------------------------------- |
+| Zero passengers                   |      115,608 | Data entry error                                                                             |
+| Zero / negative distance          |       47,350 | Cancelled trip or GPS failure                                                                |
+| Fare total mismatch (> $1)        |       15,766 | `total_amount` ≠ sum of fare, extra, MTA tax, tip, tolls, improvement + congestion surcharge |
+| Negative fare                     |        7,122 | Refunds / meter errors                                                                       |
+| Dropoff at or before pickup       |        6,291 | Impossible duration                                                                          |
+| Speed > 100 mph                   |        5,211 | GPS error (checked after feature engineering)                                                |
+| Pickup before the reporting month |          441 | Temporal anomaly                                                                             |
+| Pickup after the reporting month  |           96 | Temporal anomaly                                                                             |
+| Distance > 100 mi                 |           29 | Outlier                                                                                      |
+| Fare > $500                       |            9 | Outlier                                                                                      |
+| Trip longer than 24 h             |            5 | Stuck meter (e.g. one trip ran 1–31 Jan)                                                     |
+| **Total**                         |  **197,928** | 2.6% of raw records                                                                          |
 
 **Zone lookup** (`taxi_zone_lookup.csv`, 265 zones): text is trimmed, duplicate or non-numeric LocationIDs are dropped, and the TLC placeholder rows get readable labels — 264 becomes borough/zone `Unknown`, 265 becomes borough `Outside NYC`. The cleaned table is saved to `backend/data/processed/taxi_zones_clean.csv` and loaded into `taxi_zones`.
 
 Nulls are filled rather than dropped: `passenger_count` and `RatecodeID` default to the mode (1); `congestion_surcharge` (blank for all of Jan 2019) and `airport_fee` (not yet in 2019 files) default to 0.
 
-**Note on fare mismatches:** almost all of them come from vendor 2 and run exactly $1.95, $2.50 or $4.95 *above* the itemized charges, which looks like a surcharge billed before it had its own column. They're excluded because their totals can't be reconciled, but they are a known, systematic pattern rather than random noise.
+**Note on fare mismatches:** almost all of them come from vendor 2 and run exactly $1.95, $2.50 or $4.95 _above_ the itemized charges, which looks like a surcharge billed before it had its own column. They're excluded because their totals can't be reconciled, but they are a known, systematic pattern rather than random noise.
 
 ---
 
@@ -295,4 +295,4 @@ Nulls are filled rather than dropped: `passenger_count` and `RatecodeID` default
 
 ## AI Usage Disclosure
 
-*To complete per the course's academic integrity policy.* AI assistance (Claude Code) was used to port the earlier version of this project into this repository: adapting the ETL to the 2019 file format, the API validation, the tests and this README.
+_To complete per the course's academic integrity policy._ AI assistance (Claude Code) was used to port the earlier version of this project into this repository: adapting the ETL to the 2019 file format, the API validation, the tests and this README.
